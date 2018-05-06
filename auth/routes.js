@@ -10,20 +10,20 @@ const router = express.Router();
 const successResponse = common.responses.successResponse;
 
 //GET AUTH TOKEN
-router.get('/', (req,res,next) => {
-    try {        
+router.get('/', (req, res, next) => {
+    try {
         var authorization = req.get("Authorization");
         if (authorization.indexOf("Basic ") != 0) next("Invalid Authorization.");
         else {
-            authorization = authorization.replace("Basic ","");
+            authorization = authorization.replace("Basic ", "");
             authorization = Buffer.from(authorization, 'base64').toString("ascii");
             const email = authorization.split(":")[0];
             const password = authorization.split(":")[1];
-            
+
             //Locate User
             users.findByEmail(email).then(
                 (userResults) => {
-                    if (userResults.length == 1) 
+                    if (userResults.length == 1)
                         users.access.getAll(userResults[0].id).then(
                             (accessResults) => {
                                 userResults[0].access = accessResults;
@@ -36,22 +36,24 @@ router.get('/', (req,res,next) => {
                 },
                 (error) => next(error));
         }
+    } catch (error) {
+        next(error)
     }
-    catch (error) { next(error) }
 });
 
 //GET REFRESHED TOKEN
-router.get('/Refresh', (req,res,next) => {
-    try {        
+router.get('/Refresh', (req, res, next) => {
+    try {
         var authorization = req.get("Authorization");
         if (authorization.indexOf("Bearer ") != 0) next("Invalid Authorization.");
         else {
-            services.auth.refresh(authorization.replace("Bearer ","")).then(
+            services.auth.refresh(authorization.replace("Bearer ", "")).then(
                 (token) => res.status(200).json(successResponse(token)),
                 (error) => next(error));
         }
+    } catch (error) {
+        next(error)
     }
-    catch (error) { next(error) }
 });
 
 module.exports = router;
